@@ -1,6 +1,7 @@
 from slack_bolt import App
+
 from .sample_action import sample_action_callback
 
 
-def register(app: App):
+def register(app: App) -> None:
     app.action("sample_action_id")(sample_action_callback)

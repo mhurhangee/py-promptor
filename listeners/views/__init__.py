@@ -1,6 +1,7 @@
 from slack_bolt import App
+
 from .sample_view import sample_view_callback
 
 
-def register(app: App):
+def register(app: App) -> None:
     app.view("sample_view_id")(sample_view_callback)

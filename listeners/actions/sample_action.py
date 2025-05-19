@@ -4,7 +4,7 @@ from slack_bolt import Ack
 from slack_sdk import WebClient
 
 
-def sample_action_callback(ack: Ack, client: WebClient, body: dict, logger: Logger):
+def sample_action_callback(ack: Ack, client: WebClient, body: dict, logger: Logger) -> None:
     try:
         ack()
         client.views_update(
@@ -60,5 +60,5 @@ def sample_action_callback(ack: Ack, client: WebClient, body: dict, logger: Logg
                 "submit": {"type": "plain_text", "text": "Submit"},
             },
         )
-    except Exception as e:
-        logger.error(e)
+    except Exception:
+        logger.exception("Error updating modal")

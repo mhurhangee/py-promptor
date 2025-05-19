@@ -7,15 +7,16 @@ from slack_bolt import App
 
 # Import handlers to ensure decorators are registered
 # This must be done before registering the assistant middleware
-
-from . import start_assistant_thread  # noqa: F401 # Has @assistant.thread_started decorator
-from . import user_message  # noqa: F401 # Has @assistant.user_message decorator
+from . import (
+    start_assistant_thread,  # noqa: F401 # Has @assistant.thread_started decorator
+    user_message,  # noqa: F401 # Has @assistant.user_message decorator
+)
 
 # Import the assistant instance
-from .sample_assistant import assistant
+from .assistant import assistant
 
 
-def register(app: App):
+def register(app: App) -> None:
     """
     Register all assistant-related listeners with the Bolt app.
 

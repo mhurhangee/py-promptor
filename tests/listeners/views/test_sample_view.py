@@ -6,7 +6,6 @@ from slack_sdk import WebClient
 
 from listeners.views.sample_view import sample_view_callback
 
-
 test_logger = logging.getLogger(__name__)
 
 
@@ -19,8 +18,8 @@ class TestSampleView:
                 "values": {
                     "input_block_id": {"sample_input_id": {"value": "test value"}},
                     "select_channel_block_id": {"sample_dropdown_id": {"selected_conversation": "C1234"}},
-                }
-            }
+                },
+            },
         }
         self.fake_client = Mock(WebClient)
         self.fake_client.chat_postMessage = Mock(WebClient.chat_postMessage)
