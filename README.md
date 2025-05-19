@@ -33,11 +33,11 @@ git clone https://github.com/your-username/py-promptor.git
 cd py-promptor
 
 # Create and activate a virtual environment
-python -m venv venv
+python -m venv .venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 
 ```
 
@@ -91,33 +91,6 @@ ruff format .
 
 # Fix auto-fixable issues
 ruff check --fix .
-```
-
-### Development Helper Script
-
-A helper script is provided to simplify common development tasks:
-
-```bash
-# Format code
-./scripts/dev.py format
-
-# Lint code
-./scripts/dev.py lint
-
-# Fix auto-fixable issues
-./scripts/dev.py fix
-
-# Run tests
-./scripts/dev.py test
-
-# Install dependencies
-./scripts/dev.py install
-
-# Update requirements.txt
-./scripts/dev.py update
-
-# Run format, lint, and test in sequence
-./scripts/dev.py all
 ```
 
 ### Testing

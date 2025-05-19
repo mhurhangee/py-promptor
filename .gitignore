@@ -38,5 +38,12 @@ logs/
 .pytype/
 .idea/
 
+# uv
+.venv/
+.ruff_cache/
+
+# slack
+.slack/
+
 # windsurf rules
 .windsurfrules
