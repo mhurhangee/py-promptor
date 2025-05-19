@@ -5,6 +5,7 @@ This module contains the handler for user messages in assistant threads.
 
 import logging
 from typing import Dict, List
+
 from slack_bolt import BoltContext, Say, SetStatus
 from slack_sdk import WebClient
 

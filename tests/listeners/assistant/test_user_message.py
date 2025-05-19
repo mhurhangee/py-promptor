@@ -3,9 +3,9 @@ Tests for the user_message handler.
 """
 
 import logging
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
-from slack_bolt import BoltContext, Say, SetStatus
+from slack_bolt import BoltContext, Say
 from slack_sdk import WebClient
 
 from listeners.assistant.user_message import respond_in_assistant_thread

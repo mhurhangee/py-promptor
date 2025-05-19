@@ -1,5 +1,6 @@
-from slack_bolt import Ack, Respond
 from logging import Logger
+
+from slack_bolt import Ack, Respond
 
 
 def sample_command_callback(command, ack: Ack, respond: Respond, logger: Logger):
