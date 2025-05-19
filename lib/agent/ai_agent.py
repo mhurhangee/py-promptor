@@ -18,7 +18,7 @@ class AIAgent:
     AI Agent class that handles interactions with the Agno framework.
     """
 
-    def __init__(self, model_id: str | None = None):
+    def __init__(self, model_id: str | None = None) -> None:
         """
         Initialize the AI Agent with the specified model.
 
@@ -50,9 +50,10 @@ class AIAgent:
         try:
             # Get the response from the AI agent
             response: RunResponse = self.agent.run(message)
-            return response.content or "I don't have a response at this time."
         except Exception as e:
-            return f"Sorry, I encountered an error: {str(e)}"
+            return f"Sorry, I encountered an error: {e!s}"
+        else:
+            return response.content or "I don't have a response at this time."
 
     def process_conversation(self, messages: List[Dict[str, str]]) -> str:
         """

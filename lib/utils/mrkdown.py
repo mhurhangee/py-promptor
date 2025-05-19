@@ -22,6 +22,6 @@ def markdown_to_mrkdwn(returned_message: str, logger: Logger) -> str:
         return converter.convert(returned_message)
     except Exception as e:
         error_msg = f"Markdown to mrkdwn conversion failed: {e}"
-        logger.error(error_msg)
+        logger.exception(error_msg)
         # Return the original message as fallback
         return returned_message

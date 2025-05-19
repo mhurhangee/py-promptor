@@ -18,8 +18,8 @@ class TestSampleView:
                 "values": {
                     "input_block_id": {"sample_input_id": {"value": "test value"}},
                     "select_channel_block_id": {"sample_dropdown_id": {"selected_conversation": "C1234"}},
-                }
-            }
+                },
+            },
         }
         self.fake_client = Mock(WebClient)
         self.fake_client.chat_postMessage = Mock(WebClient.chat_postMessage)

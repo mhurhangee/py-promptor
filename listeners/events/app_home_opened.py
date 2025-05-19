@@ -3,7 +3,7 @@ from logging import Logger
 from slack_sdk import WebClient
 
 
-def app_home_opened_callback(client: WebClient, event: dict, logger: Logger):
+def app_home_opened_callback(client: WebClient, event: dict, logger: Logger) -> None:
     # ignore the app_home_opened event for anything but the Home tab
     if event["tab"] != "home":
         return
@@ -25,11 +25,11 @@ def app_home_opened_callback(client: WebClient, event: dict, logger: Logger):
                         "text": {
                             "type": "mrkdwn",
                             "text": "Learn how home tabs can be more useful and "
-                            + "interactive <https://api.slack.com/surfaces/tabs/using|*in the documentation*>.",
+                            "interactive <https://api.slack.com/surfaces/tabs/using|*in the documentation*>.",
                         },
                     },
                 ],
             },
         )
-    except Exception as e:
-        logger.error(f"Error publishing home tab: {e}")
+    except Exception:
+        logger.exception("Error publishing home tab")

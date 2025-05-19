@@ -19,13 +19,12 @@ from .assistant import assistant
 
 @assistant.user_message
 def respond_in_assistant_thread(
-    payload: dict,
     logger: logging.Logger,
     context: BoltContext,
     set_status: SetStatus,
     client: WebClient,
     say: Say,
-):
+) -> None:
     """
     Respond to user messages in assistant threads.
 
@@ -33,7 +32,6 @@ def respond_in_assistant_thread(
     It retrieves conversation history, processes the message, and sends a response.
 
     Args:
-        payload: The event payload
         logger: Logger instance
         context: Bolt context
         set_status: Function to set assistant status
@@ -41,14 +39,13 @@ def respond_in_assistant_thread(
         say: Function to send messages
     """
     try:
-
         # Set the assistant status to "thinking"
         set_status(random_choice(THINKING_MESSAGES))
 
         # Collect conversation history from the thread
         # Add type checking to ensure channel_id and thread_ts are not None
         if context.channel_id is None or context.thread_ts is None:
-            logger.error("Missing channel_id or thread_ts in context")
+            logger.exception("Missing channel_id or thread_ts in context")
             say(MESSAGES["error_missing_context"])
             return
 
@@ -82,5 +79,5 @@ def respond_in_assistant_thread(
 
     except Exception as e:
         error_msg = f"Error processing assistant message: {e}"
-        logger.error(error_msg)
+        logger.exception(error_msg)
         say(MESSAGES["error_general"])  # : Sorry, something went wrong: {e}")

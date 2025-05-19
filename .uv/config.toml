@@ -1,0 +1,11 @@
+# UV Configuration
+[server]
+index-urls = ["https://pypi.org/simple/"]
+
+[venv]
+# Use a consistent venv location
+location = ".venv"
+
+[install]
+# Always install development dependencies
+dev = true

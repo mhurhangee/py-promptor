@@ -63,17 +63,61 @@ python3 app.py
 
 ## Development
 
-### Linting and Formatting
+### Package Management with UV
+
+This project uses [UV](https://github.com/astral-sh/uv), a fast Python package installer and resolver.
 
 ```bash
-# Run flake8 for linting
-flake8 .
+# Install dependencies
+uv pip install -r requirements.txt
 
-# Format code with black
-black .
+# Add a new package
+uv pip install package-name
 
-# Sort imports with isort
-isort .
+# Update requirements.txt after adding packages
+uv pip freeze > requirements.txt
+```
+
+### Linting and Formatting with Ruff
+
+This project uses [Ruff](https://github.com/astral-sh/ruff) for fast Python linting and formatting.
+
+```bash
+# Check code with Ruff
+ruff check .
+
+# Format code with Ruff
+ruff format .
+
+# Fix auto-fixable issues
+ruff check --fix .
+```
+
+### Development Helper Script
+
+A helper script is provided to simplify common development tasks:
+
+```bash
+# Format code
+./scripts/dev.py format
+
+# Lint code
+./scripts/dev.py lint
+
+# Fix auto-fixable issues
+./scripts/dev.py fix
+
+# Run tests
+./scripts/dev.py test
+
+# Install dependencies
+./scripts/dev.py install
+
+# Update requirements.txt
+./scripts/dev.py update
+
+# Run format, lint, and test in sequence
+./scripts/dev.py all
 ```
 
 ### Testing

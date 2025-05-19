@@ -4,7 +4,7 @@ from slack_bolt import Ack
 from slack_sdk import WebClient
 
 
-def sample_shortcut_callback(body: dict, ack: Ack, client: WebClient, logger: Logger):
+def sample_shortcut_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
     try:
         ack()
         client.views_open(
@@ -56,5 +56,5 @@ def sample_shortcut_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
                 "submit": {"type": "plain_text", "text": "Submit"},
             },
         )
-    except Exception as e:
-        logger.error(e)
+    except Exception:
+        logger.exception("Error updating modal")

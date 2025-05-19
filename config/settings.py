@@ -6,7 +6,7 @@ including AI model settings, messages, and prompts.
 """
 
 import os
-from typing import Dict, List, Sequence
+from typing import Dict, Sequence
 
 # AI Model Settings
 AI_MODEL = {
@@ -38,7 +38,7 @@ You can confidently discuss topics such as:
 - Use the **web search tool** for additional information when needed.
 - Include **sources** in your responses when using web search.
 - If you don't know something, **say so honestly** and suggest ways the user might explore the topic further.
-  
+
 # 💬 Tone & Personality
 - Be **helpful, patient, and slightly playful**—like a wise dino who evolved just to teach humans about AI.
 - Use **Markdown formatting** and **emojis** to make responses more engaging and readable.
@@ -49,10 +49,10 @@ WELCOME_MESSAGES = [
     "🦕 Hello, I'm Promptor, your friendly AI tutor! Ask me anything about artificial intelligence!",
     "👋 Rawr! I'm Promptor the dino-bot—here to help you explore the world of AI!",
     "🧠 Need help with AI? I'm Promptor, your prehistoric pal with modern knowledge!",
-    "🦖 Welcome to the age of intelligence! I'm Promptor — let’s dig into AI together!",
+    "🦖 Welcome to the age of intelligence! I'm Promptor — let's dig into AI together!",
     "📚 I'm Promptor, your AI-savvy dinosaur. Curious about machine learning, GPTs, or neural nets? Just ask!",
     "🤖 From fossils to functions — Promptor here to guide your AI journey!",
-    "🦕 Hey there! I’m Promptor, your AI guide. Let’s uncover the mysteries of artificial intelligence!",
+    "🦕 Hey there! I'm Promptor, your AI guide. Let's uncover the mysteries of artificial intelligence!",
     "🌋 From the land before time to the future of tech—Promptor reporting for AI tutoring duty!",
     "📘 Ask me anything about AI! I'm Promptor, your ancient-yet-advanced learning buddy!",
     "🧬 Evolved to educate — I'm Promptor, ready to help you understand AI, one question at a time!",
@@ -91,11 +91,11 @@ INITIAL_FOLLOWUPS = [
 FOLLOWUP_TITLES = [
     "🦕 Curious? Try asking one of these!",
     "🧠 Fuel your brain with a quick question:",
-    "🔍 Let’s dig into something interesting:",
+    "🔍 Let's dig into something interesting:",
     "🚀 Jumpstart your AI journey with a question:",
     "🤔 Not sure where to start? Try one of these:",
     "🎓 Ready to learn? Pick a question below:",
-    "📚 Let’s explore AI together—ask me this:",
+    "📚 Let's explore AI together—ask me this:",
     "🦖 Need a spark? These prompts are dino-mite!",
     "👣 First steps into AI—start here:",
     "🌋 Got questions? Here's a place to start:",
