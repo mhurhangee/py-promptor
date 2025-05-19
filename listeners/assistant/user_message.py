@@ -9,7 +9,7 @@ from typing import Dict, List
 from slack_bolt import BoltContext, Say, SetStatus
 from slack_sdk import WebClient
 
-from .sample_assistant import assistant
+from .assistant import assistant
 
 
 @assistant.user_message
@@ -66,16 +66,21 @@ def respond_in_assistant_thread(
             role = "user" if message.get("bot_id") is None else "assistant"
             messages_in_thread.append({"role": role, "content": message.get("text", "")})
 
-        # TODO: Replace this with your actual LLM call
-        # For now, we'll just echo back a simple response
-        user_message = payload.get("text", "")
-        returned_message = (
-            f"I received your message: '{user_message}'\n\nThis is a placeholder response."
-            + "\nYou'll need to implement the actual LLM integration."
-        )
-
-        # Send the response
-        say(returned_message)
+        # Import the AI agent to process the message
+        from lib.agent.ai_agent import ai_agent
+        
+        # Get AI response using the agent
+        try:
+            # Process the conversation and get a response
+            ai_response = ai_agent.process_conversation(messages_in_thread)
+            
+            # Send the response
+            say(ai_response)
+            
+        except Exception as e:
+            error_message = f"Error processing message with AI: {str(e)}"
+            logger.error(error_message)
+            say(":warning: I encountered an error while processing your request. Please try again later.")
 
     except Exception as e:
         error_msg = f"Error processing assistant message: {e}"

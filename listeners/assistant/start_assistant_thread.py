@@ -2,7 +2,7 @@ from logging import Logger
 
 from slack_bolt import Say, SetSuggestedPrompts
 
-from .sample_assistant import assistant
+from .assistant import assistant
 
 
 @assistant.thread_started
@@ -24,6 +24,6 @@ def start_assistant_thread(
             ]
         )
     except Exception as e:
-        error_msg = "+++++++++++++++++++++Error starting assistant thread: {error}".format(error=e)
+        error_msg = "Error starting assistant thread: {error}".format(error=e)
         logger.error(error_msg)
         say(error_msg)
