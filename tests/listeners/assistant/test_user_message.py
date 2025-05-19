@@ -3,7 +3,7 @@ Tests for the user_message handler.
 """
 
 import logging
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock, MagicMock
 
 from slack_bolt import BoltContext, Say
 from slack_sdk import WebClient

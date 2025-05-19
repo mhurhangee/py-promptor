@@ -6,11 +6,11 @@ from markdown_to_mrkdwn import SlackMarkdownConverter
 def markdown_to_mrkdwn(returned_message: str, logger: Logger) -> str:
     """
     Convert Markdown to Slack mrkdwn format.
-    
+
     Args:
         returned_message: Markdown string.
         logger: Logger instance for error reporting.
-        
+
     Returns:
         mrkdwn-formatted string or the original message if conversion fails.
     """

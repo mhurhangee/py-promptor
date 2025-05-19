@@ -17,7 +17,6 @@ Promptor is a Slack-first AI assistant that helps teams with AI-powered tutoring
 ### Prerequisites
 - Python 3.8+
 - A Slack workspace where you have permission to install apps
-- [ngrok](https://ngrok.com/) for local development (recommended)
 
 ### 1. Create a Slack App
 1. Go to [Slack API](https://api.slack.com/apps/new) and select "From an app manifest"
@@ -90,3 +89,5 @@ pytest
 - `manifest.json` - Slack app configuration
 - `requirements.txt` - Python dependencies
 - `/listeners` - Event handlers organized by type
+- `/config` - Configuration files
+- `/lib` - Library files

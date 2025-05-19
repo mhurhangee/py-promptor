@@ -4,10 +4,15 @@ This module contains the handler for user messages in assistant threads.
 """
 
 import logging
+from random import choice as random_choice
 from typing import Dict, List
 
 from slack_bolt import BoltContext, Say, SetStatus
 from slack_sdk import WebClient
+
+from config.settings import MESSAGES, THINKING_MESSAGES
+from lib.agent.ai_agent import ai_agent
+from lib.utils.mrkdown import markdown_to_mrkdwn
 
 from .assistant import assistant
 
@@ -37,14 +42,14 @@ def respond_in_assistant_thread(
     """
     try:
 
-        # Set the assistant status to "typing"
-        set_status("is typing...")
+        # Set the assistant status to "thinking"
+        set_status(random_choice(THINKING_MESSAGES))
 
         # Collect conversation history from the thread
         # Add type checking to ensure channel_id and thread_ts are not None
         if context.channel_id is None or context.thread_ts is None:
             logger.error("Missing channel_id or thread_ts in context")
-            say(":warning: Sorry, I couldn't process your request due to missing context information.")
+            say(MESSAGES["error_missing_context"])
             return
 
         replies = client.conversations_replies(
@@ -59,35 +64,23 @@ def respond_in_assistant_thread(
         # Check if messages exist in the response
         if "messages" not in replies or not isinstance(replies.get("messages"), list) or not replies.get("messages"):
             logger.warning("No messages found in thread")
-            say(":thinking_face: I couldn't find our conversation history. Let's start fresh!")
+            say(MESSAGES["error_no_messages"])
             return
 
         for message in replies.get("messages", []):
             role = "user" if message.get("bot_id") is None else "assistant"
             messages_in_thread.append({"role": role, "content": message.get("text", "")})
 
-        # Import the AI agent to process the message
-        from lib.agent.ai_agent import ai_agent
-        # Import the markdown to mrkdwn converter
-        from lib.utils.mrkdown import markdown_to_mrkdwn
-        
-        # Get AI response using the agent
-        try:
-            # Process the conversation and get a response
-            ai_response = ai_agent.process_conversation(messages_in_thread)
-            
-            # Convert markdown response to Slack mrkdwn format
-            slack_response = markdown_to_mrkdwn(ai_response, logger)
-            
-            # Send the formatted response
-            say(slack_response or ai_response)  # Fallback to original response if conversion fails
-            
-        except Exception as e:
-            error_message = f"Error processing message with AI: {str(e)}"
-            logger.error(error_message)
-            say(":warning: I encountered an error while processing your request. Please try again later.")
+        # Process the conversation and get a response
+        ai_response = ai_agent.process_conversation(messages_in_thread)
+
+        # Convert markdown response to Slack mrkdwn format
+        slack_response = markdown_to_mrkdwn(ai_response, logger)
+
+        # Send the formatted response
+        say(slack_response or ai_response)  # Fallback to original response if conversion fails
 
     except Exception as e:
         error_msg = f"Error processing assistant message: {e}"
         logger.error(error_msg)
-        say(f":warning: Sorry, something went wrong: {e}")
+        say(MESSAGES["error_general"])  # : Sorry, something went wrong: {e}")
