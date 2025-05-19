@@ -68,14 +68,19 @@ def respond_in_assistant_thread(
 
         # Import the AI agent to process the message
         from lib.agent.ai_agent import ai_agent
+        # Import the markdown to mrkdwn converter
+        from lib.utils.mrkdown import markdown_to_mrkdwn
         
         # Get AI response using the agent
         try:
             # Process the conversation and get a response
             ai_response = ai_agent.process_conversation(messages_in_thread)
             
-            # Send the response
-            say(ai_response)
+            # Convert markdown response to Slack mrkdwn format
+            slack_response = markdown_to_mrkdwn(ai_response, logger)
+            
+            # Send the formatted response
+            say(slack_response or ai_response)  # Fallback to original response if conversion fails
             
         except Exception as e:
             error_message = f"Error processing message with AI: {str(e)}"

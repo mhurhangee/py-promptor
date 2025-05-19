@@ -16,7 +16,7 @@ class AIAgent:
     AI Agent class that handles interactions with the Agno framework.
     """
 
-    def __init__(self, model_id: str = "gpt-4o"):
+    def __init__(self, model_id: str = "gpt-4.1-mini"):
         """
         Initialize the AI Agent with the specified model.
         
