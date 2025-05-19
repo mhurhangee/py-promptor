@@ -33,4 +33,3 @@ if __name__ == "__main__":
         SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN")).start()
     except Exception as e:
         logger.error(f"Error starting app: {e}")
-
