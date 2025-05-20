@@ -128,4 +128,4 @@ SUGGESTED_PROMPTS: Sequence[Dict[str, str]] = [
 ]
 
 # Logging Settings
-#LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO") # TODO: Set in app.py
+# LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO") # TODO: Set in app.py
