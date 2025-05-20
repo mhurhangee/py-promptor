@@ -5,13 +5,11 @@ This module contains the handler for user messages in assistant threads.
 
 import logging
 from random import choice as random_choice
-from typing import Dict, List
 
 from slack_bolt import BoltContext, Say, SetStatus
-from slack_sdk import WebClient
 
 from config.settings import MESSAGES, THINKING_MESSAGES
-from lib.agent.ai_agent import ai_agent
+from lib.agent.agent import create_agent
 from lib.utils.mrkdown import markdown_to_mrkdwn
 
 from .assistant import assistant
@@ -19,10 +17,10 @@ from .assistant import assistant
 
 @assistant.user_message
 def respond_in_assistant_thread(
+    payload: dict,
     logger: logging.Logger,
     context: BoltContext,
     set_status: SetStatus,
-    client: WebClient,
     say: Say,
 ) -> None:
     """
@@ -32,52 +30,39 @@ def respond_in_assistant_thread(
     It retrieves conversation history, processes the message, and sends a response.
 
     Args:
+        payload: Dictionary containing the message payload
         logger: Logger instance
         context: Bolt context
         set_status: Function to set assistant status
-        client: Slack WebClient instance
         say: Function to send messages
     """
     try:
         # Set the assistant status to "thinking"
         set_status(random_choice(THINKING_MESSAGES))
 
-        # Collect conversation history from the thread
-        # Add type checking to ensure channel_id and thread_ts are not None
-        if context.channel_id is None or context.thread_ts is None:
-            logger.exception("Missing channel_id or thread_ts in context")
+        user_message = payload["text"]
+
+        logger.info("User message: %s", user_message)
+
+        # Check if required context is available
+        if context.thread_ts is None:
+            logger.exception("Missing thread_ts in context")
             say(MESSAGES["error_missing_context"])
             return
 
-        replies = client.conversations_replies(
-            channel=context.channel_id,
-            ts=context.thread_ts,
-            oldest=context.thread_ts,
-            limit=10,
-        )
+        # Process the user message directly with Agno's session storage
+        # The thread_ts is used as the session ID to maintain conversation history
 
-        # Format messages for processing
-        messages_in_thread: List[Dict[str, str]] = []
-        # Check if messages exist in the response
-        if "messages" not in replies or not isinstance(replies.get("messages"), list) or not replies.get("messages"):
-            logger.warning("No messages found in thread")
-            say(MESSAGES["error_no_messages"])
-            return
-
-        for message in replies.get("messages", []):
-            role = "user" if message.get("bot_id") is None else "assistant"
-            messages_in_thread.append({"role": role, "content": message.get("text", "")})
-
-        # Process the conversation and get a response
-        ai_response = ai_agent.process_conversation(messages_in_thread)
+        # Run the agent with the user message
+        response = create_agent(session_id=f"thread_ts_{context.thread_ts}").run(user_message)
 
         # Convert markdown response to Slack mrkdwn format
-        slack_response = markdown_to_mrkdwn(ai_response, logger)
+        slack_response = markdown_to_mrkdwn(response.content or "", logger)
 
         # Send the formatted response
-        say(slack_response or ai_response)  # Fallback to original response if conversion fails
+        say(slack_response)
 
     except Exception as e:
         error_msg = f"Error processing assistant message: {e}"
         logger.exception(error_msg)
-        say(MESSAGES["error_general"])  # : Sorry, something went wrong: {e}")
+        say(MESSAGES["error_general"])
