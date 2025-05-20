@@ -18,8 +18,11 @@ def delete_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logg
         # We don't need the user ID here as we're just showing a confirmation dialog
         # The actual deletion will happen in the view submission handler
 
-        # Check if this action was triggered from within a modal (for future reference)
-        # is_from_modal = body.get("container", {}).get("type") == "view"
+        # Check if this action was triggered from within a modal
+        is_from_modal = body.get("container", {}).get("type") == "view"
+
+        # If from a modal, get the view ID to properly update it
+        view_id = body.get("container", {}).get("view_id") if is_from_modal else None
         # Create a confirmation dialog
         view = {
             "type": "modal",
@@ -39,11 +42,24 @@ def delete_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logg
             "close": {"type": "plain_text", "text": "Cancel", "emoji": True},
         }
 
-        # Always open a new modal regardless of where it was triggered from
-        # This avoids issues with updating views that might affect the home tab
-        client.views_open(
-            trigger_id=body["trigger_id"],
-            view=view
-        )
+        # If triggered from the detail view modal, update that view
+        if is_from_modal and view_id:
+            try:
+                client.views_update(
+                    view_id=view_id,
+                    view=view
+                )
+            except Exception as e:
+                logger.warning("Could not update view, falling back to views_open: %s", e)
+                client.views_open(
+                    trigger_id=body["trigger_id"],
+                    view=view
+                )
+        else:
+            # Otherwise, open a new modal
+            client.views_open(
+                trigger_id=body["trigger_id"],
+                view=view
+            )
     except Exception:
         logger.exception("Error handling delete prompt button")

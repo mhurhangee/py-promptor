@@ -2,7 +2,7 @@
 import datetime
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import Session
 
 from lib.db.database import Base
@@ -18,6 +18,7 @@ class Prompt(Base):
     content = Column(Text)
     category = Column(String(100), index=True)
     user_id = Column(String(50), index=True)
+    is_favorite = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
@@ -48,9 +49,12 @@ class Prompt(Base):
         return db.query(cls).filter(cls.id == prompt_id).first()
 
     @classmethod
-    def get_all_by_user(cls, db: Session, user_id: str) -> list:
-        """Get all prompts for a user."""
-        return db.query(cls).filter(cls.user_id == user_id).order_by(cls.title).all()
+    def get_all_by_user(cls, db: Session, user_id: str, favorites_only: bool = False) -> list:
+        """Get all prompts for a user, optionally filtered by favorites."""
+        query = db.query(cls).filter(cls.user_id == user_id)
+        if favorites_only:
+            query = query.filter(cls.is_favorite.is_(True))
+        return query.order_by(cls.title).all()
 
     @classmethod
     def delete(cls, db: Session, prompt_id: int) -> bool:
@@ -61,3 +65,19 @@ class Prompt(Base):
             db.commit()
             return True
         return False
+
+    @classmethod
+    def toggle_favorite(cls, db: Session, prompt_id: int) -> tuple[bool, bool]:
+        """Toggle the favorite status of a prompt.
+
+        Returns:
+            A tuple of (success, new_favorite_status)
+        """
+        prompt = cls.get_by_id(db, prompt_id)
+        if prompt:
+            # Toggle the favorite status using SQLAlchemy's is_ method
+            new_status = not bool(prompt.is_favorite)
+            prompt.is_favorite = new_status
+            db.commit()
+            return True, new_status
+        return False, False
