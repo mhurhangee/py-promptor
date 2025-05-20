@@ -6,6 +6,7 @@ from slack_sdk import WebClient
 
 from lib.db.database import get_db
 from lib.db.models import Prompt
+from lib.slack import get_user_id
 from lib.ui.prompt_library import get_prompt_library_blocks
 
 
@@ -16,7 +17,7 @@ def filter_category_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
         ack()
 
         # Get the user ID
-        user_id = body["user"]["id"]
+        user_id = get_user_id(body)
 
         # Get the selected category
         selected_category = body["actions"][0]["selected_option"]["value"]

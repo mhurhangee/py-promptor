@@ -6,6 +6,7 @@ from slack_sdk import WebClient
 
 from lib.db.database import get_db
 from lib.db.models import Prompt
+from lib.slack import error_eph, get_prompt_id
 
 
 def view_prompt_details_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
@@ -14,23 +15,15 @@ def view_prompt_details_callback(body: dict, ack: Ack, client: WebClient, logger
         # Acknowledge the button click
         ack()
 
-        # Extract the prompt ID from the action_id
-        action_id = body["actions"][0]["action_id"]
-        prompt_id = int(action_id.split(":")[-1])
-
-        # Get the user ID
-        user_id = body["user"]["id"]
+        # Get prompt ID and user id
+        prompt_id = get_prompt_id(body)
 
         # Get the prompt from the database
         db = next(get_db())
         prompt = Prompt.get_by_id(db, prompt_id)
 
         if not prompt:
-            client.chat_postEphemeral(
-                channel=user_id,
-                user=user_id,
-                text="❌ Sorry, that prompt could not be found.",
-            )
+            error_eph(client, body, "Sorry, that prompt could not be found.")
             return
 
         # Create the modal view with all action buttons
@@ -106,3 +99,4 @@ def view_prompt_details_callback(body: dict, ack: Ack, client: WebClient, logger
         )
     except Exception:
         logger.exception("Error handling view prompt details button")
+        error_eph(client, body, "Sorry, something went wrong while viewing the prompt details.")

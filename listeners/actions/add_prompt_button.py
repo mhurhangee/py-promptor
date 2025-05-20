@@ -4,15 +4,15 @@ from logging import Logger
 from slack_bolt import Ack
 from slack_sdk import WebClient
 
+from lib.slack import error_eph
+
 
 def add_prompt_button_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
     """Handle the add prompt button click."""
+
     try:
         # Acknowledge the button click
         ack()
-
-        # We no longer need to check if this was triggered from a modal
-        # since we're focusing on the home tab implementation
 
         # Create the modal view
         view = {
@@ -96,11 +96,10 @@ def add_prompt_button_callback(body: dict, ack: Ack, client: WebClient, logger: 
             "submit": {"type": "plain_text", "text": "💾", "emoji": True},
         }
 
-        # Always open a new modal regardless of where it was triggered from
-        # This avoids issues with updating views that might affect the home tab
         client.views_open(
             trigger_id=body["trigger_id"],
             view=view
         )
     except Exception:
         logger.exception("Error handling add prompt button")
+        error_eph(client, body, "Sorry, something went wrong while adding the prompt.")

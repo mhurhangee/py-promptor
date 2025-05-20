@@ -4,6 +4,8 @@ from logging import Logger
 from slack_bolt import Ack
 from slack_sdk import WebClient
 
+from lib.slack import get_prompt_id, get_view_id
+
 
 def delete_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
     """Handle the delete prompt button click."""
@@ -11,18 +13,12 @@ def delete_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logg
         # Acknowledge the button click
         ack()
 
-        # Extract the prompt ID from the action_id
-        action_id = body["actions"][0]["action_id"]
-        prompt_id = int(action_id.split(":")[-1])
-
-        # We don't need the user ID here as we're just showing a confirmation dialog
-        # The actual deletion will happen in the view submission handler
-
-        # Check if this action was triggered from within a modal
-        is_from_modal = body.get("container", {}).get("type") == "view"
+        # Get the prompt ID
+        prompt_id = get_prompt_id(body)
 
         # If from a modal, get the view ID to properly update it
-        view_id = body.get("container", {}).get("view_id") if is_from_modal else None
+        view_id = get_view_id(body)
+
         # Create a confirmation dialog
         view = {
             "type": "modal",
@@ -42,24 +38,10 @@ def delete_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logg
             "close": {"type": "plain_text", "text": "Cancel", "emoji": True},
         }
 
-        # If triggered from the detail view modal, update that view
-        if is_from_modal and view_id:
-            try:
-                client.views_update(
-                    view_id=view_id,
-                    view=view
-                )
-            except Exception as e:
-                logger.warning("Could not update view, falling back to views_open: %s", e)
-                client.views_open(
-                    trigger_id=body["trigger_id"],
-                    view=view
-                )
-        else:
-            # Otherwise, open a new modal
-            client.views_open(
-                trigger_id=body["trigger_id"],
-                view=view
-            )
+        client.views_update(
+            view_id=view_id,
+            view=view
+        )
+
     except Exception:
         logger.exception("Error handling delete prompt button")

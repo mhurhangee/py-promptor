@@ -6,6 +6,7 @@ from slack_sdk import WebClient
 
 from lib.db.database import get_db
 from lib.db.models import Prompt
+from lib.slack import error_eph, get_prompt_id, get_view_id
 
 
 def edit_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
@@ -14,30 +15,19 @@ def edit_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logger
         # Acknowledge the button click
         ack()
 
-        # Extract the prompt ID from the action_id
-        action_id = body["actions"][0]["action_id"]
-        prompt_id = int(action_id.split(":")[-1])
-
-        # Get the user ID
-        user_id = body["user"]["id"]
+        # Extract the prompt ID
+        prompt_id = get_prompt_id(body)
 
         # Get the prompt from the database
         db = next(get_db())
         prompt = Prompt.get_by_id(db, prompt_id)
 
         if not prompt:
-            client.chat_postEphemeral(
-                channel=user_id,
-                user=user_id,
-                text="❌ Sorry, that prompt could not be found.",
-            )
+            error_eph(client, body, "Prompt not found")
             return
 
-        # Check if this action was triggered from within a modal
-        is_from_modal = body.get("container", {}).get("type") == "view"
-
-        # If from a modal, get the view ID to properly update it
-        view_id = body.get("container", {}).get("view_id") if is_from_modal else None
+        # Get the view ID to update the modal
+        view_id = get_view_id(body)
 
         # Create the modal view
         view = {
@@ -128,24 +118,10 @@ def edit_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logger
             "close": {"type": "plain_text", "text": "Cancel", "emoji": True},
         }
 
-        # If triggered from the detail view modal, update that view
-        if is_from_modal and view_id:
-            try:
-                client.views_update(
-                    view_id=view_id,
-                    view=view
-                )
-            except Exception as e:
-                logger.warning("Could not update view, falling back to views_open: %s", e)
-                client.views_open(
-                    trigger_id=body["trigger_id"],
-                    view=view
-                )
-        else:
-            # Otherwise, open a new modal
-            client.views_open(
-                trigger_id=body["trigger_id"],
-                view=view
-            )
+        client.views_update(
+            view_id=view_id,
+            view=view
+        )
+
     except Exception:
         logger.exception("Error handling edit prompt button")

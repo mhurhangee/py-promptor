@@ -6,6 +6,7 @@ from slack_sdk import WebClient
 
 from lib.db.database import get_db
 from lib.db.models import Prompt
+from lib.slack import error_eph, error_modal, get_prompt_id, get_user_id, get_view_id
 from listeners.events.app_home_opened import update_home_tab
 
 
@@ -16,17 +17,13 @@ def toggle_favorite_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
         ack()
 
         # Extract the prompt ID from the action ID
-        action_id = body["actions"][0]["action_id"]
-        prompt_id = int(action_id.split(":")[1])
+        prompt_id = get_prompt_id(body)
 
         # Get the user ID
-        user_id = body["user"]["id"]
+        user_id = get_user_id(body)
 
-        # Check if this action was triggered from within a modal
-        is_from_modal = body.get("container", {}).get("type") == "view"
-
-        # If from a modal, get the view ID to properly update it
-        view_id = body.get("container", {}).get("view_id") if is_from_modal else None
+        # Get the view ID to properly update it
+        view_id = get_view_id(body)
 
         # Get the prompt from the database and toggle its favorite status
         db = next(get_db())
@@ -37,7 +34,7 @@ def toggle_favorite_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
             prompt = Prompt.get_by_id(db, prompt_id)
 
             # If the action was triggered from a modal, update the modal
-            if is_from_modal and view_id and prompt:
+            if view_id and prompt:
                 # Create an updated modal view
                 view = {
                     "type": "modal",
@@ -116,18 +113,10 @@ def toggle_favorite_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
             # Update the home tab to reflect the changes
             update_home_tab(client, user_id, logger)
 
-            # If not in a modal, send a confirmation message
-            if not is_from_modal:
-                client.chat_postEphemeral(
-                    channel=user_id,
-                    user=user_id,
-                    text=f"{'Added to' if is_favorite else 'Removed from'} favorites!"
-                )
         else:
-            client.chat_postEphemeral(
-                channel=user_id,
-                user=user_id,
-                text="❌ Could not update favorite status. Please try again."
-            )
+            error_message = "❌ Could not update favorite status. Please try again."
+            error_modal(client, body, error_message)
     except Exception:
         logger.exception("Error toggling favorite status")
+        error_message = "❌ Could not update favorite status. Please try again."
+        error_eph(client, body, error_message)

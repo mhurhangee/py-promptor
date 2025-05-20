@@ -6,14 +6,12 @@ from .add_prompt_button import add_prompt_button_callback
 from .delete_prompt import delete_prompt_callback
 from .edit_prompt import edit_prompt_callback
 from .filter_category import filter_category_callback
-from .sample_action import sample_action_callback
 from .toggle_favorite import toggle_favorite_callback
 from .use_prompt import use_prompt_callback
 from .view_prompt_details import view_prompt_details_callback
 
 
 def register(app: App) -> None:
-    app.action("sample_action_id")(sample_action_callback)
     app.action("add_prompt_button")(add_prompt_button_callback)
     app.action("filter_category")(filter_category_callback)
     app.action(re.compile(r"use_prompt:\d+"))(use_prompt_callback)
