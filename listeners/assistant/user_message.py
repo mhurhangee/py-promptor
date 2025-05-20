@@ -6,21 +6,24 @@ This module contains the handler for user messages in assistant threads.
 import logging
 from random import choice as random_choice
 
-from slack_bolt import BoltContext, Say, SetStatus
+from slack_bolt import BoltContext, Say, SetStatus, SetSuggestedPrompts, SetTitle
 
-from config.settings import MESSAGES, THINKING_MESSAGES
+from config.settings import FOLLOWUP_TITLES, MESSAGES, THINKING_MESSAGES
 from lib.agent.agent import create_agent
+from lib.slack import md_section, text_context
 from lib.utils.mrkdown import markdown_to_mrkdwn
 
 from .assistant import assistant
 
 
 @assistant.user_message
-def respond_in_assistant_thread(
+def respond_in_assistant_thread(  # noqa: PLR0913
     payload: dict,
     logger: logging.Logger,
     context: BoltContext,
     set_status: SetStatus,
+    set_title: SetTitle,
+    set_suggested_prompts: SetSuggestedPrompts,
     say: Say,
 ) -> None:
     """
@@ -56,11 +59,40 @@ def respond_in_assistant_thread(
         # Run the agent with the user message
         response = create_agent(session_id=f"thread_ts_{context.thread_ts}").run(user_message)
 
-        # Convert markdown response to Slack mrkdwn format
-        slack_response = markdown_to_mrkdwn(response.content or "", logger)
+        # Check if we got a response from the agent
+        if response is None:
+            logger.exception("Failed to get response from agent")
+            say(MESSAGES["error_general"])
+            return
 
-        # Send the formatted response
-        say(slack_response)
+        # Get the content object safely
+        content = getattr(response, "content", None)
+
+        # Get the response text safely
+        llm_response_text = getattr(content, "response", "") if content else ""
+        thread_title = getattr(content, "thread_title", "") if content else ""
+        response_title = getattr(content, "response_title", "") if content else ""
+        follow_ups = getattr(content, "follow_ups", []) if content else []
+
+        if not llm_response_text:
+            logger.warning("No response text found in the agent response")
+            say(MESSAGES["error_general"])
+            return
+
+        set_title(thread_title)
+
+        # Format and send the response
+        slack_response = markdown_to_mrkdwn(llm_response_text, logger)
+        say(
+            blocks=[
+                text_context(response_title),
+                md_section(slack_response),
+            ]
+        )
+
+        random_follow_up = random_choice(FOLLOWUP_TITLES)
+
+        set_suggested_prompts(follow_ups, title=random_follow_up)
 
     except Exception as e:
         error_msg = f"Error processing assistant message: {e}"

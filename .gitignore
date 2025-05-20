@@ -47,3 +47,6 @@ logs/
 
 # windsurf rules
 .windsurfrules
+
+# agno storage
+data/
