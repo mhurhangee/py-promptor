@@ -114,6 +114,7 @@ pytest
 - Prompt library
   - Delete prompt
   - Edit prompt
+  - Favorite prompt
   - Share prompt
   - Use prompt
   - View prompt

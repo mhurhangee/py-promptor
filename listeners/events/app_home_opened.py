@@ -3,9 +3,7 @@ from typing import Optional
 
 from slack_sdk import WebClient
 
-from lib.db.database import get_db
-from lib.db.models import Prompt
-from lib.slack import md_section
+from lib.ui.prompt_library import get_prompt_library_blocks
 
 
 def app_home_opened_callback(client: WebClient, event: dict, logger: Logger) -> None:
@@ -24,90 +22,8 @@ def app_home_opened_callback(client: WebClient, event: dict, logger: Logger) -> 
 def update_home_tab(client: WebClient, user_id: str, logger: Optional[Logger] = None) -> None:
     """Update the home tab for the user with their saved prompts."""
     try:
-        # Get the user's prompts from the database
-        db = next(get_db())
-        prompts = Prompt.get_all_by_user(db, user_id)
-
-        # Create the home tab view
-        blocks = [
-            md_section("Welcome to *Promptor*, <@" + user_id + "> 🦕"),
-            md_section("This is your prompt library!"),
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "+ Add New Prompt"},
-                        "action_id": "add_prompt_button",
-                        "style": "primary",
-                    }
-                ],
-            },
-            {"type": "divider"},
-        ]
-
-        # Add prompts to the view if they exist
-        if prompts:
-            # Group prompts by category
-            prompts_by_category = {}
-            for prompt in prompts:
-                if prompt.category not in prompts_by_category:
-                    prompts_by_category[prompt.category] = []
-                prompts_by_category[prompt.category].append(prompt)
-
-            # Add each category and its prompts
-            for category, category_prompts in prompts_by_category.items():
-                # Add category header
-                blocks.append({
-                    "type": "header",
-                    "text": {"type": "plain_text", "text": category}
-                })
-
-                # Add each prompt in this category
-                for prompt in category_prompts:
-                    # Define a constant for preview length
-                    preview_length = 100
-                    # Add the prompt with actions
-                    blocks.append({
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"*{prompt.title}*\n{prompt.content[:preview_length]}{'...' if len(prompt.content) > preview_length else ''}"
-                        },
-                        "accessory": {
-                            "type": "button",
-                            "text": {"type": "plain_text", "text": "Use", "emoji": True},
-                            "style": "primary",
-                            "value": str(prompt.id),
-                            "action_id": f"use_prompt:{prompt.id}"
-                        }
-                    })
-
-                    # Add action buttons for this prompt
-                    blocks.append({
-                        "type": "actions",
-                        "elements": [
-                            {
-                                "type": "button",
-                                "text": {"type": "plain_text", "text": "🗑️ Delete", "emoji": True},
-                                "style": "danger",
-                                "value": str(prompt.id),
-                                "action_id": f"delete_prompt:{prompt.id}",
-                                "confirm": {
-                                    "title": {"type": "plain_text", "text": "Delete Prompt"},
-                                    "text": {"type": "mrkdwn", "text": f"Are you sure you want to delete *{prompt.title}*? This cannot be undone."},
-                                    "confirm": {"type": "plain_text", "text": "Delete"},
-                                    "deny": {"type": "plain_text", "text": "Cancel"}
-                                }
-                            }
-                        ]
-                    })
-
-                    # Add a divider between prompts
-                    blocks.append({"type": "divider"})
-        else:
-            # No prompts message
-            blocks.append(md_section("You don't have any prompts yet. Click the button above to add your first prompt!"))
+        # Get the prompt library blocks with both buttons
+        blocks = get_prompt_library_blocks(user_id, show_add_button=True, show_modal_button=True)
 
         # Publish the view
         client.views_publish(

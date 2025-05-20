@@ -20,12 +20,29 @@
                 "type": "global",
                 "callback_id": "sample_shortcut_id",
                 "description": "Runs a sample shortcut"
+            },
+            {
+                "name": "Add new prompt",
+                "type": "global",
+                "callback_id": "add_prompt_shortcut",
+                "description": "Add a new prompt to your library"
+            },
+            {
+                "name": "View prompt library",
+                "type": "global",
+                "callback_id": "view_prompt_library_shortcut",
+                "description": "View your prompt library"
             }
         ],
         "slash_commands": [
             {
                 "command": "/sample-command",
                 "description": "Runs a sample command",
+                "should_escape": false
+            },
+            {
+                "command": "/prompts",
+                "description": "View your prompt library",
                 "should_escape": false
             }
         ]
