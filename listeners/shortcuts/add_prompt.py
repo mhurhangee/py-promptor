@@ -17,7 +17,7 @@ def add_prompt_shortcut_callback(body: dict, ack: Ack, client: WebClient, logger
             view={
                 "type": "modal",
                 "callback_id": "add_prompt_view",
-                "title": {"type": "plain_text", "text": "Add New Prompt"},
+                "title": {"type": "plain_text", "text": "🏛️ Add New Prompt"},
                 "blocks": [
                     {
                         "type": "input",
@@ -91,7 +91,8 @@ def add_prompt_shortcut_callback(body: dict, ack: Ack, client: WebClient, logger
                         },
                     },
                 ],
-                "submit": {"type": "plain_text", "text": "Save Prompt"},
+                "close": {"type": "plain_text", "text": "❌", "emoji": True},
+                "submit": {"type": "plain_text", "text": "💾", "emoji": True},
             },
         )
     except Exception:

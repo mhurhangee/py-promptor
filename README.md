@@ -108,3 +108,17 @@ pytest
 - `/listeners` - Event handlers organized by type
 - `/config` - Configuration files
 - `/lib` - Library files
+
+## Roadmap
+
+- Prompt library
+  - Delete prompt
+  - Edit prompt
+  - Share prompt
+  - Use prompt
+  - View prompt
+  - Search prompts
+  - View as a modal
+
+- AI Tutor
+  - 

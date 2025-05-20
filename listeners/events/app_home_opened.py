@@ -67,6 +67,7 @@ def update_home_tab(client: WebClient, user_id: str, logger: Optional[Logger] = 
                 for prompt in category_prompts:
                     # Define a constant for preview length
                     preview_length = 100
+                    # Add the prompt with actions
                     blocks.append({
                         "type": "section",
                         "text": {
@@ -75,11 +76,35 @@ def update_home_tab(client: WebClient, user_id: str, logger: Optional[Logger] = 
                         },
                         "accessory": {
                             "type": "button",
-                            "text": {"type": "plain_text", "text": "Use"},
+                            "text": {"type": "plain_text", "text": "Use", "emoji": True},
+                            "style": "primary",
                             "value": str(prompt.id),
                             "action_id": f"use_prompt:{prompt.id}"
                         }
                     })
+
+                    # Add action buttons for this prompt
+                    blocks.append({
+                        "type": "actions",
+                        "elements": [
+                            {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "🗑️ Delete", "emoji": True},
+                                "style": "danger",
+                                "value": str(prompt.id),
+                                "action_id": f"delete_prompt:{prompt.id}",
+                                "confirm": {
+                                    "title": {"type": "plain_text", "text": "Delete Prompt"},
+                                    "text": {"type": "mrkdwn", "text": f"Are you sure you want to delete *{prompt.title}*? This cannot be undone."},
+                                    "confirm": {"type": "plain_text", "text": "Delete"},
+                                    "deny": {"type": "plain_text", "text": "Cancel"}
+                                }
+                            }
+                        ]
+                    })
+
+                    # Add a divider between prompts
+                    blocks.append({"type": "divider"})
         else:
             # No prompts message
             blocks.append(md_section("You don't have any prompts yet. Click the button above to add your first prompt!"))
