@@ -5,17 +5,16 @@ from lib.db.database import get_db
 from lib.db.models import Prompt
 
 
-def get_prompt_library_blocks(user_id: str, show_add_button: bool = True, show_modal_button: bool = False) -> List[dict]:
+def get_prompt_library_blocks(user_id: str, show_add_button: bool = True) -> List[dict]:
     """
     Generate blocks for displaying the prompt library.
 
     Args:
         user_id: The ID of the user whose prompts to display
         show_add_button: Whether to show the "Add New Prompt" button
-        show_modal_button: Whether to show the "View as Modal" button
 
     Returns:
-        A list of block elements for displaying in a home tab or modal
+        A list of block elements for displaying in a home tab
     """
     # Get the user's prompts from the database
     db = next(get_db())
@@ -25,34 +24,83 @@ def get_prompt_library_blocks(user_id: str, show_add_button: bool = True, show_m
     blocks = [
         {
             "type": "header",
-            "text": {"type": "plain_text", "text": "📚 Your Prompt Library"}
+            "text": {"type": "plain_text", "text": "Your Prompt Library", "emoji": True},
         }
     ]
 
-    # Add action buttons if needed
-    action_elements = []
+    # Add a search box for filtering prompts (to be implemented later)
+    blocks.append(
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Search and filter your prompts:*"
+            },
+        }
+    )
 
-    if show_add_button:
-        action_elements.append({
-            "type": "button",
-            "text": {"type": "plain_text", "text": "+ Add New Prompt!!!", "emoji": True},
-            "style": "primary",
-            "action_id": "add_prompt_button"
-        })
-
-    if show_modal_button:
-        action_elements.append({
-            "type": "button",
-            "text": {"type": "plain_text", "text": "🔍 View as Modal", "emoji": True},
-            "action_id": "view_prompts_modal"
-        })
-
-    if action_elements:
-        blocks.append({
+    # This is a placeholder for future search functionality
+    blocks.append(
+        {
             "type": "actions",
-            "elements": action_elements
-        })
+            "elements": [
+                {
+                    "type": "static_select",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Filter by category",
+                        "emoji": True
+                    },
+                    "options": [
+                        {
+                            "text": {"type": "plain_text", "text": "All Categories", "emoji": True},
+                            "value": "all"
+                        },
+                        {
+                            "text": {"type": "plain_text", "text": "General", "emoji": True},
+                            "value": "General"
+                        },
+                        {
+                            "text": {"type": "plain_text", "text": "Writing", "emoji": True},
+                            "value": "Writing"
+                        },
+                        {
+                            "text": {"type": "plain_text", "text": "Coding", "emoji": True},
+                            "value": "Coding"
+                        },
+                        {
+                            "text": {"type": "plain_text", "text": "Marketing", "emoji": True},
+                            "value": "Marketing"
+                        },
+                        {
+                            "text": {"type": "plain_text", "text": "Other", "emoji": True},
+                            "value": "Other"
+                        }
+                    ],
+                    "action_id": "filter_category"
+                }
+            ]
+        }
+    )
 
+    # Add a divider before the prompts
+    blocks.append({"type": "divider"})
+
+    # Add the Add New Prompt button at the top if requested
+    if show_add_button:
+        blocks.append(
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Add New Prompt", "emoji": True},
+                        "style": "primary",
+                        "action_id": "add_prompt_button",
+                    }
+                ],
+            }
+        )
     blocks.append({"type": "divider"})
 
     # Add prompts to the view if they exist
@@ -95,6 +143,12 @@ def get_prompt_library_blocks(user_id: str, show_add_button: bool = True, show_m
                 blocks.append({
                     "type": "actions",
                     "elements": [
+                        {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "✏️ Edit", "emoji": True},
+                            "value": str(prompt.id),
+                            "action_id": f"edit_prompt:{prompt.id}"
+                        },
                         {
                             "type": "button",
                             "text": {"type": "plain_text", "text": "🗑️ Delete", "emoji": True},

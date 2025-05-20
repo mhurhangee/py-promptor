@@ -4,7 +4,7 @@ from logging import Logger
 from slack_bolt import Ack
 from slack_sdk import WebClient
 
-from lib.ui.prompt_library import get_prompt_library_blocks
+from listeners.events.app_home_opened import update_home_tab
 
 
 def view_prompt_library_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
@@ -16,19 +16,14 @@ def view_prompt_library_callback(body: dict, ack: Ack, client: WebClient, logger
         # Get the user ID
         user_id = body["user"]["id"]
 
-        # Get the prompt library blocks (only show add button, not modal button)
-        blocks = get_prompt_library_blocks(user_id, show_add_button=True, show_modal_button=False)
+        # Update the home tab to show the prompt library
+        update_home_tab(client, user_id, logger)
 
-        # Open the modal
-        client.views_open(
-            trigger_id=body["trigger_id"],
-            view={
-                "type": "modal",
-                "callback_id": "prompt_library_modal",
-                "title": {"type": "plain_text", "text": "Prompt Library"},
-                "blocks": blocks,
-                "close": {"type": "plain_text", "text": "Close", "emoji": True}
-            }
+        # Send an ephemeral message to guide the user
+        client.chat_postEphemeral(
+            channel=body.get("channel", {}).get("id") or user_id,  # Use channel if available, otherwise DM
+            user=user_id,
+            text="✨ Your prompt library is ready! Check the Home tab of this app to view and manage your prompts."
         )
     except Exception:
-        logger.exception("Error opening prompt library modal")
+        logger.exception("Error redirecting to prompt library")

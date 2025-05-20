@@ -112,14 +112,12 @@ pytest
 ## Roadmap
 
 - Prompt library
-  - Delete prompt
   - Edit prompt
   - Favorite prompt
   - Share prompt
   - Use prompt
   - View prompt
   - Search prompts
-  - View as a modal
 
 - AI Tutor
   - 

@@ -22,8 +22,8 @@ def app_home_opened_callback(client: WebClient, event: dict, logger: Logger) -> 
 def update_home_tab(client: WebClient, user_id: str, logger: Optional[Logger] = None) -> None:
     """Update the home tab for the user with their saved prompts."""
     try:
-        # Get the prompt library blocks with both buttons
-        blocks = get_prompt_library_blocks(user_id, show_add_button=True, show_modal_button=True)
+        # Get the prompt library blocks for the home tab
+        blocks = get_prompt_library_blocks(user_id, show_add_button=True)
 
         # Publish the view
         client.views_publish(
