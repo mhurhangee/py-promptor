@@ -10,8 +10,7 @@ from slack_bolt import BoltContext, Say, SetStatus, SetSuggestedPrompts, SetTitl
 
 from config.settings import FOLLOWUP_TITLES, MESSAGES, THINKING_MESSAGES
 from lib.agent.agent import create_agent
-from lib.slack import md_section, text_context
-from lib.utils.mrkdown import markdown_to_mrkdwn
+from lib.slack import markdown_to_mrkdwn, md_section, text_context
 
 from .assistant import assistant
 
