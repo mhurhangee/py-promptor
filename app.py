@@ -1,6 +1,7 @@
 import logging
 import os
 
+from rich.logging import RichHandler
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
@@ -8,9 +9,10 @@ from listeners import register_listeners
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    level=logging.INFO,
+    format="%(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[RichHandler()],
 )
 
 logger = logging.getLogger(__name__)
