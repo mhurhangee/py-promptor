@@ -19,7 +19,7 @@ from lib.slack.blocks import (
 PREVIEW_LENGTH = 100
 
 
-def get_prompt_library_blocks(user_id: str, show_add_button: bool = True, filtered_prompts: Optional[List[Prompt]] = None) -> List[dict]:
+def get_prompt_library_blocks(user_id: str, filtered_prompts: Optional[List[Prompt]] = None) -> List[dict]:
     """
     Generate blocks for displaying the prompt library.
 
@@ -39,28 +39,18 @@ def get_prompt_library_blocks(user_id: str, show_add_button: bool = True, filter
 
     # Create the header blocks
     blocks = [
-        header("Your Prompt Library"),
-        # Add a search box for filtering prompts
-        section("*Search and filter your prompts:*"),
+        header(":books: Your Prompt Library"),
         # Category filter dropdown
         actions([
-            _create_category_filter_dropdown()
+            _create_category_filter_dropdown(),
+            button(
+                text="Add New Prompt",
+                action_id="add_prompt_button",
+                style="primary"
+            )
         ]),
         # Add a divider before the prompts
-        divider()
     ]
-
-    # Add the Add New Prompt button at the top if requested
-    if show_add_button:
-        blocks.append(
-            actions([
-                button(
-                    text="Add New Prompt",
-                    action_id="add_prompt_button",
-                    style="primary"
-                )
-            ])
-        )
     blocks.append({"type": "divider"})
 
     # Add prompts to the view if they exist
@@ -93,7 +83,7 @@ def get_prompt_library_blocks(user_id: str, show_add_button: bool = True, filter
     else:
         # If there are no prompts, show a message
         blocks.append(
-            section("*You don't have any prompts yet.* Click the button above to add your first prompt!")
+            section("*You don't have any prompts yet.* Click the button above to add your first prompt! Or select a message in a conversation.")
         )
     return blocks
 
