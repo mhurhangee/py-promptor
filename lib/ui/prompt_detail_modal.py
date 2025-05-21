@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
-from lib.slack.blocks import actions, button, context_text, modal, section
-from lib.ui.prompt_library import create_prompt_metadata_text
+from lib.slack.blocks import actions, button, modal, section
+from lib.ui.prompt_metadata import create_prompt_context_block
 
 
 def prompt_detail_modal(prompt: Any) -> Dict[str, Any]:
@@ -11,15 +11,13 @@ def prompt_detail_modal(prompt: Any) -> Dict[str, Any]:
     Args:
         prompt: A Prompt object with attributes id, title, category, content, is_favorite, created_at
     """
-    # Use the reusable metadata function for consistency
-    metadata_text = create_prompt_metadata_text(prompt)
 
     # Format the prompt content as a code block for better visibility
     content = str(prompt.content).strip()
     formatted_content = f"```\n{content}\n```"
 
     blocks = [
-        context_text(metadata_text),
+        create_prompt_context_block(prompt),
         section(formatted_content),
         actions([
             button("🧪 Test it", f"use_prompt:{prompt.id}", style="primary"),

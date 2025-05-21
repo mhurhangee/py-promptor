@@ -9,7 +9,7 @@ def modal(  # noqa: PLR0913
     blocks: List[Block],
     callback_id: str,
     submit_text: Optional[str] = None,
-    close_text: str = "Close",
+    close_text: str = ":x: Close",
     private_metadata: str = "",
     clear_on_close: bool = False,
     notify_on_close: bool = False,
