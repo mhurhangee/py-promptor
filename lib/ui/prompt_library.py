@@ -1,8 +1,19 @@
 """UI components for the prompt library."""
-from typing import List, Optional
+from typing import Dict, List, Optional
 
+from config.categories import ALL_CATEGORIES_VALUE, DEFAULT_CATEGORIES
 from lib.db.database import get_db
 from lib.db.models import Prompt
+from lib.slack.blocks import (
+    actions,
+    button,
+    context_text,
+    divider,
+    header,
+    section,
+    select_option,
+    select_static,
+)
 
 # Constants
 PREVIEW_LENGTH = 100
@@ -28,139 +39,84 @@ def get_prompt_library_blocks(user_id: str, show_add_button: bool = True, filter
 
     # Create the header blocks
     blocks = [
-        {
-            "type": "header",
-            "text": {"type": "plain_text", "text": "Your Prompt Library", "emoji": True},
-        }
+        header("Your Prompt Library"),
+        # Add a search box for filtering prompts
+        section("*Search and filter your prompts:*"),
+        # Category filter dropdown
+        actions([
+            _create_category_filter_dropdown()
+        ]),
+        # Add a divider before the prompts
+        divider()
     ]
-
-    # Add a search box for filtering prompts (to be implemented later)
-    blocks.append(
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Search and filter your prompts:*"
-            },
-        }
-    )
-
-    # This is a placeholder for future search functionality
-    blocks.append(
-        {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "static_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Filter by category",
-                        "emoji": True
-                    },
-                    "options": [
-                        {
-                            "text": {"type": "plain_text", "text": "All Prompts", "emoji": True},
-                            "value": "all"
-                        },
-                        {
-                            "text": {"type": "plain_text", "text": "★ Favorites Only", "emoji": True},
-                            "value": "favorites"
-                        },
-                        {
-                            "text": {"type": "plain_text", "text": "General", "emoji": True},
-                            "value": "General"
-                        },
-                        {
-                            "text": {"type": "plain_text", "text": "Writing", "emoji": True},
-                            "value": "Writing"
-                        },
-                        {
-                            "text": {"type": "plain_text", "text": "Coding", "emoji": True},
-                            "value": "Coding"
-                        },
-                        {
-                            "text": {"type": "plain_text", "text": "Marketing", "emoji": True},
-                            "value": "Marketing"
-                        },
-                        {
-                            "text": {"type": "plain_text", "text": "Other", "emoji": True},
-                            "value": "Other"
-                        }
-                    ],
-                    "action_id": "filter_category"
-                }
-            ]
-        }
-    )
-
-    # Add a divider before the prompts
-    blocks.append({"type": "divider"})
 
     # Add the Add New Prompt button at the top if requested
     if show_add_button:
         blocks.append(
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Add New Prompt", "emoji": True},
-                        "style": "primary",
-                        "action_id": "add_prompt_button",
-                    }
-                ],
-            }
+            actions([
+                button(
+                    text="Add New Prompt",
+                    action_id="add_prompt_button",
+                    style="primary"
+                )
+            ])
         )
     blocks.append({"type": "divider"})
 
     # Add prompts to the view if they exist
     if prompts:
-        # Group prompts by category
-        prompts_by_category = {}
+        # Add each prompt to the blocks
         for prompt in prompts:
-            category = prompt.category or "Uncategorized"
-            if category not in prompts_by_category:
-                prompts_by_category[category] = []
-            prompts_by_category[category].append(prompt)
+            # Create a preview of the prompt content
+            content_preview = str(prompt.content)
+            if len(content_preview) > PREVIEW_LENGTH:
+                content_preview = content_preview[:PREVIEW_LENGTH] + "..."
 
-        # Add each category and its prompts
-        for category, category_prompts in prompts_by_category.items():
-            # Add category header
+            # Add the favorite star if applicable
+            title_prefix = "★ " if bool(prompt.is_favorite) else ""
+            # Add the prompt block with View button
             blocks.append(
-                {
-                    "type": "header",
-                    "text": {"type": "plain_text", "text": category, "emoji": True},
-                }
-            )
-
-            # Add each prompt in this category with a simplified view
-            for prompt in category_prompts:
-                # Add the prompt title and a snippet of the content with a View button
-                blocks.append(
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"*{prompt.title}* {':star:' if bool(prompt.is_favorite) else ''}\n{prompt.content[:PREVIEW_LENGTH]}{'...' if len(prompt.content) > PREVIEW_LENGTH else ''}",
-                        },
-                        "accessory": {
-                            "type": "button",
-                            "text": {"type": "plain_text", "text": "View", "emoji": True},
-                            "action_id": f"view_prompt_details:{prompt.id}",
-                        },
-                    }
+                section(
+                    f"*{title_prefix}{prompt.title}*\n{content_preview}",
+                    accessory=button(
+                        text="View",
+                        action_id=f"view_prompt_details:{prompt.id}"
+                    )
                 )
-
-                # Add a divider between prompts
-                blocks.append({"type": "divider"})
+            )
+            # Add a context block with the category
+            blocks.append(
+                _create_prompt_context_block(prompt)
+            )
+            # Add a divider between prompts
+            blocks.append(divider())
     else:
-        # No prompts message
-        blocks.append({
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "You don't have any prompts yet. Click the button above to add your first prompt!"
-            }
-        })
-
+        # If there are no prompts, show a message
+        blocks.append(
+            section("*You don't have any prompts yet.* Click the button above to add your first prompt!")
+        )
     return blocks
+
+
+def _create_category_filter_dropdown() -> Dict:
+    """Create a dropdown for filtering prompts by category."""
+    # Start with special options
+    options = [
+        select_option("All Prompts", ALL_CATEGORIES_VALUE),
+        select_option("★ Favorites Only", "favorites"),
+    ]
+    # Add category options from the centralized config
+    for category in DEFAULT_CATEGORIES:
+        options.append(select_option(category["text"], category["value"]))
+    return select_static(
+        action_id="filter_category",
+        placeholder="Filter by category",
+        options=options
+    )
+
+
+def _create_prompt_context_block(prompt: Prompt) -> Dict:
+    """Create a context block with prompt metadata."""
+    return context_text(
+        f"Category: *{prompt.category}* | Created: {prompt.created_at.strftime('%Y-%m-%d')}"
+    )

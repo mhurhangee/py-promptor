@@ -4,7 +4,8 @@ from logging import Logger
 from slack_bolt import Ack
 from slack_sdk import WebClient
 
-from lib.slack import get_prompt_id, get_view_id
+from lib.slack import get_prompt_id, get_view_id, handle_error
+from lib.ui import delete_prompt_confirmation_modal
 
 
 def delete_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
@@ -19,29 +20,19 @@ def delete_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logg
         # If from a modal, get the view ID to properly update it
         view_id = get_view_id(body)
 
-        # Create a confirmation dialog
-        view = {
-            "type": "modal",
-            "callback_id": "delete_prompt_confirmation",
-            "private_metadata": str(prompt_id),  # Store the prompt ID in private_metadata
-            "title": {"type": "plain_text", "text": "Confirm Deletion", "emoji": True},
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "*Are you sure you want to delete this prompt?*\nThis action cannot be undone."
-                    }
-                },
-            ],
-            "submit": {"type": "plain_text", "text": "Delete", "emoji": True},
-            "close": {"type": "plain_text", "text": "Cancel", "emoji": True},
-        }
+        # Create a confirmation dialog using the modal builder
+        view = delete_prompt_confirmation_modal(prompt_id)
 
         client.views_update(
             view_id=view_id,
             view=view
         )
 
-    except Exception:
-        logger.exception("Error handling delete prompt button")
+    except Exception as e:
+        handle_error(
+            client=client,
+            body=body,
+            logger=logger,
+            error=e,
+            message="Could not prepare the delete confirmation. Please try again."
+        )

@@ -6,7 +6,8 @@ from slack_sdk import WebClient
 
 from lib.db.database import get_db
 from lib.db.models import Prompt
-from lib.slack import error_eph, get_prompt_id, get_view_id
+from lib.slack import get_prompt_id, get_view_id, handle_error, send_error_eph
+from lib.ui import edit_prompt_modal
 
 
 def edit_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logger) -> None:
@@ -23,105 +24,25 @@ def edit_prompt_callback(body: dict, ack: Ack, client: WebClient, logger: Logger
         prompt = Prompt.get_by_id(db, prompt_id)
 
         if not prompt:
-            error_eph(client, body, "Prompt not found")
+            send_error_eph(client, body, "Prompt not found")
             return
 
         # Get the view ID to update the modal
         view_id = get_view_id(body)
 
-        # Create the modal view
-        view = {
-            "type": "modal",
-            "callback_id": "edit_prompt_view",
-            "private_metadata": str(prompt.id),  # Store the prompt ID in private_metadata
-            "title": {"type": "plain_text", "text": "Edit Prompt", "emoji": True},
-            "blocks": [
-                {
-                    "type": "input",
-                    "block_id": "prompt_title_block",
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Prompt Title",
-                    },
-                    "element": {
-                        "type": "plain_text_input",
-                        "action_id": "prompt_title_input",
-                        "initial_value": prompt.title,
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Enter a descriptive title for your prompt",
-                        },
-                    },
-                },
-                {
-                    "type": "input",
-                    "block_id": "prompt_category_block",
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Category",
-                    },
-                    "element": {
-                        "type": "static_select",
-                        "action_id": "prompt_category_select",
-                        "initial_option": {
-                            "text": {"type": "plain_text", "text": prompt.category},
-                            "value": prompt.category,
-                        },
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select a category",
-                        },
-                        "options": [
-                            {
-                                "text": {"type": "plain_text", "text": "General"},
-                                "value": "General",
-                            },
-                            {
-                                "text": {"type": "plain_text", "text": "Writing"},
-                                "value": "Writing",
-                            },
-                            {
-                                "text": {"type": "plain_text", "text": "Coding"},
-                                "value": "Coding",
-                            },
-                            {
-                                "text": {"type": "plain_text", "text": "Marketing"},
-                                "value": "Marketing",
-                            },
-                            {
-                                "text": {"type": "plain_text", "text": "Other"},
-                                "value": "Other",
-                            },
-                        ],
-                    },
-                },
-                {
-                    "type": "input",
-                    "block_id": "prompt_content_block",
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Prompt Content",
-                    },
-                    "element": {
-                        "type": "plain_text_input",
-                        "action_id": "prompt_content_input",
-                        "multiline": True,
-                        "initial_value": prompt.content,
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Enter your prompt content here...",
-                        },
-                    },
-                },
-            ],
-            "submit": {"type": "plain_text", "text": "Save Changes", "emoji": True},
-            "close": {"type": "plain_text", "text": "Cancel", "emoji": True},
-        }
+        # Create the modal view using the modal builder
+        view = edit_prompt_modal(prompt)
 
         client.views_update(
             view_id=view_id,
             view=view
         )
 
-    except Exception:
-        logger.exception("Error handling edit prompt button")
+    except Exception as e:
+        handle_error(
+            client=client,
+            body=body,
+            logger=logger,
+            error=e,
+            message="Sorry, something went wrong while editing the prompt."
+        )

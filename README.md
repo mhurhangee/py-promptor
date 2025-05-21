@@ -113,7 +113,6 @@ pytest
 
 - Prompt library
   - Share prompt
-  - Use prompt
   - Search prompts
 
 - AI Tutor

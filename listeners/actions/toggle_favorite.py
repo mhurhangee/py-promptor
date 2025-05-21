@@ -6,7 +6,8 @@ from slack_sdk import WebClient
 
 from lib.db.database import get_db
 from lib.db.models import Prompt
-from lib.slack import error_eph, error_modal, get_prompt_id, get_user_id, get_view_id
+from lib.slack import get_prompt_id, get_user_id, get_view_id, handle_error
+from lib.ui import prompt_detail_modal
 from listeners.events.app_home_opened import update_home_tab
 
 
@@ -27,7 +28,7 @@ def toggle_favorite_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
 
         # Get the prompt from the database and toggle its favorite status
         db = next(get_db())
-        success, is_favorite = Prompt.toggle_favorite(db, prompt_id)
+        success = Prompt.toggle_favorite(db, prompt_id)
 
         if success:
             # Get the prompt to update the UI
@@ -35,71 +36,8 @@ def toggle_favorite_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
 
             # If the action was triggered from a modal, update the modal
             if view_id and prompt:
-                # Create an updated modal view
-                view = {
-                    "type": "modal",
-                    "callback_id": "prompt_details_view",
-                    "title": {"type": "plain_text", "text": prompt.title, "emoji": True},
-                    "blocks": [
-                        {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": f"*Category:* {prompt.category}"
-                            }
-                        },
-                        {
-                            "type": "divider"
-                        },
-                        {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": prompt.content
-                            }
-                        },
-                        {
-                            "type": "divider"
-                        },
-                        {
-                            "type": "actions",
-                            "elements": [
-                                {
-                                    "type": "button",
-                                    "text": {"type": "plain_text", "text": "Use", "emoji": True},
-                                    "style": "primary",
-                                    "action_id": f"use_prompt:{prompt.id}"
-                                },
-                                {
-                                    "type": "button",
-                                    "text": {"type": "plain_text", "text": f"{'★ Unfavorite' if is_favorite else '☆ Favorite'}", "emoji": True},
-                                    "action_id": f"toggle_favorite:{prompt.id}"
-                                },
-                                {
-                                    "type": "button",
-                                    "text": {"type": "plain_text", "text": "✏️ Edit", "emoji": True},
-                                    "action_id": f"edit_prompt:{prompt.id}"
-                                },
-                                {
-                                    "type": "button",
-                                    "text": {"type": "plain_text", "text": "🗑️ Delete", "emoji": True},
-                                    "style": "danger",
-                                    "action_id": f"delete_prompt:{prompt.id}"
-                                }
-                            ]
-                        },
-                        {
-                            "type": "context",
-                            "elements": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"Created: {prompt.created_at.strftime('%Y-%m-%d')}"
-                                }
-                            ]
-                        }
-                    ],
-                    "close": {"type": "plain_text", "text": "Close", "emoji": True}
-                }
+                # Create an updated modal view using the modal builder
+                view = prompt_detail_modal(prompt)
 
                 try:
                     # Update the modal view
@@ -114,9 +52,19 @@ def toggle_favorite_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
             update_home_tab(client, user_id, logger)
 
         else:
-            error_message = "❌ Could not update favorite status. Please try again."
-            error_modal(client, body, error_message)
-    except Exception:
-        logger.exception("Error toggling favorite status")
-        error_message = "❌ Could not update favorite status. Please try again."
-        error_eph(client, body, error_message)
+            # Handle the case where toggling the favorite status failed
+            handle_error(
+                client=client,
+                body=body,
+                logger=logger,
+                error=Exception("Failed to toggle favorite status"),
+                message="Could not update favorite status. Please try again."
+            )
+    except Exception as e:
+        handle_error(
+            client=client,
+            body=body,
+            logger=logger,
+            error=e,
+            message="Could not update favorite status. Please try again."
+        )

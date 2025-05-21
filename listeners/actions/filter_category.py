@@ -6,7 +6,7 @@ from slack_sdk import WebClient
 
 from lib.db.database import get_db
 from lib.db.models import Prompt
-from lib.slack import get_user_id
+from lib.slack import get_user_id, handle_error, send_error_eph
 from lib.ui.prompt_library import get_prompt_library_blocks
 
 
@@ -19,9 +19,19 @@ def filter_category_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
         # Get the user ID
         user_id = get_user_id(body)
 
-        # Get the selected category
-        selected_category = body["actions"][0]["selected_option"]["value"]
-        selected_text = body["actions"][0]["selected_option"]["text"]["text"]
+        # Get the selected category safely
+        actions = body.get("actions", [])
+        if not actions:
+            send_error_eph(client, body, "No category selection found.")
+            return
+
+        selected_option = actions[0].get("selected_option", {})
+        if not selected_option:
+            send_error_eph(client, body, "No category selection found.")
+            return
+
+        selected_category = selected_option.get("value", "all")
+        selected_text = selected_option.get("text", {}).get("text", "All")
 
         # Log the selection
         logger.info("User %s filtered prompts by: %s", user_id, selected_text)
@@ -55,5 +65,11 @@ def filter_category_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
             },
         )
 
-    except Exception:
-        logger.exception("Error handling category filter")
+    except Exception as e:
+        handle_error(
+            client=client,
+            body=body,
+            logger=logger,
+            error=e,
+            message="Sorry, something went wrong while filtering prompts."
+        )

@@ -22,9 +22,9 @@ def add_prompt_view_callback(
 
         # Extract values from the submitted form
         values = view["state"]["values"]
-        title = values["prompt_title_block"]["prompt_title_input"]["value"]
-        category = values["prompt_category_block"]["prompt_category_select"]["selected_option"]["value"]
-        content = values["prompt_content_block"]["prompt_content_input"]["value"]
+        title = values["title_block"]["title_input"]["value"]
+        category = values["category_block"]["category_input"]["selected_option"]["value"]
+        content = values["content_block"]["content_input"]["value"]
 
         # Save the prompt to the database
         db = next(get_db())
