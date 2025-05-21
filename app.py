@@ -5,6 +5,7 @@ from rich.logging import RichHandler
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
+from lib.db.database import init_db
 from listeners import register_listeners
 
 # Configure logging
@@ -32,6 +33,12 @@ register_listeners(app)
 if __name__ == "__main__":
     logger.info("Starting Promptor Slack app...")
     try:
+        # Initialize the database
+        logger.info("Initializing database...")
+        init_db()
+        logger.info("Database initialized successfully")
+
+        # Start the Socket Mode handler
         SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN")).start()
     except Exception:
         logger.exception("Error starting app")

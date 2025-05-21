@@ -21,5 +21,6 @@ class ResponseSchema(BaseModel):
 
     follow_ups: Optional[List[str]] = Field(
         None,
-        description="A list of follow-up prompts to keep the conversation going. Optional but helpful for promoting curiosity. Each item should be a potential follow-up question the user might ask next, written from the user's perspective. Start with a relevant emoji.",
+        max_length=4,
+        description="A list of follow-up prompts (maximum 4) to keep the conversation going. Optional but helpful for promoting curiosity. Each item should be a potential follow-up question the user might ask next, written from the user's perspective. Start with a relevant emoji.",
     )

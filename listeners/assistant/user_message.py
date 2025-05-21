@@ -10,8 +10,8 @@ from slack_bolt import BoltContext, Say, SetStatus, SetSuggestedPrompts, SetTitl
 
 from config.settings import FOLLOWUP_TITLES, MESSAGES, THINKING_MESSAGES
 from lib.agent.agent import create_agent
-from lib.slack import md_section, text_context
-from lib.utils.mrkdown import markdown_to_mrkdwn
+from lib.slack import markdown_to_mrkdwn
+from lib.slack.blocks import context_text, section
 
 from .assistant import assistant
 
@@ -84,15 +84,17 @@ def respond_in_assistant_thread(  # noqa: PLR0913
         # Format and send the response
         slack_response = markdown_to_mrkdwn(llm_response_text, logger)
         say(
+            text=response_title + "\n\n" + slack_response,
             blocks=[
-                text_context(response_title),
-                md_section(slack_response),
+                context_text(response_title),
+                section(slack_response),
             ]
         )
 
         random_follow_up = random_choice(FOLLOWUP_TITLES)
 
-        set_suggested_prompts(follow_ups, title=random_follow_up)
+        # Set suggested prompts - limit to first 4 follow-ups
+        set_suggested_prompts(follow_ups[:4], title=random_follow_up)
 
     except Exception as e:
         error_msg = f"Error processing assistant message: {e}"
