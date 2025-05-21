@@ -28,8 +28,8 @@ def prompt_detail_modal(prompt: Any) -> Dict[str, Any]:
 
     ]
 
-    # Truncate title to 24 characters (leaving room for ellipsis if needed)
-    max_title_length = 24
+    # Truncate title to 22 characters (leaving room for ellipsis if needed)
+    max_title_length = 22
     title = prompt.title
     if len(title) > max_title_length:
         title = title[:max_title_length] + "…"

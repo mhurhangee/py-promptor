@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
-from lib.slack.blocks import input_block, modal, text_input
-from lib.ui.category_select import category_select
+from lib.ui.add_prompt_modal import add_prompt_modal
 
 
 def edit_prompt_modal(prompt: Any) -> Dict[str, Any]:
@@ -11,40 +10,23 @@ def edit_prompt_modal(prompt: Any) -> Dict[str, Any]:
     Args:
         prompt: A Prompt object with attributes id, title, category, content
     """
-    blocks = [
-        input_block(
-            label="Title",
-            block_id="title_block",
-            element=text_input(
-                action_id="title_input",
-                placeholder="Enter a title",
-                initial_value=prompt.title
-            ),
-        ),
-        input_block(
-            label="Category",
-            block_id="category_block",
-            element=category_select(
-                action_id="category_input",
-                initial_category=str(prompt.category),
-            ),
-        ),
-        input_block(
-            label="Content",
-            block_id="content_block",
-            element=text_input(
-                action_id="content_input",
-                placeholder="Enter the prompt content",
-                initial_value=prompt.content,
-                multiline=True
-            ),
-        ),
-    ]
+    # Get tags if they exist
+    tags = ""
+    if hasattr(prompt, "tags"):
+        tags = getattr(prompt, "tags", "")
 
-    return modal(
-        title="Edit Prompt",
-        blocks=blocks,
-        callback_id="edit_prompt_view",
-        submit_text="Save Changes",
-        private_metadata=str(prompt.id),
+    # Reuse the add_prompt_modal with different title and callback_id
+    modal_view = add_prompt_modal(
+        initial_content=prompt.content,
+        initial_title=prompt.title,
+        initial_category=str(prompt.category) if prompt.category else None,
+        initial_tags=tags,
+        private_metadata=str(prompt.id)
     )
+
+    # Update the modal properties for editing
+    modal_view["title"]["text"] = "Edit Prompt"
+    modal_view["callback_id"] = "edit_prompt_view"
+    modal_view["submit"]["text"] = "💾 Save Changes"
+
+    return modal_view
