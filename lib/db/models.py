@@ -14,9 +14,10 @@ class Prompt(Base):
     __tablename__ = "prompts"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(255), index=True)
-    content = Column(Text)
-    category = Column(String(100), index=True)
+    title = Column(String(255), nullable=True, index=True)
+    content = Column(Text, nullable=False)
+    category = Column(String(100), nullable=True, index=True)
+    tags = Column(String(255), nullable=True)  # Store as comma-separated string
     user_id = Column(String(50), index=True)
     is_favorite = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
@@ -26,16 +27,27 @@ class Prompt(Base):
     def create(
         cls,
         db: Session,
-        title: str,
         content: str,
         user_id: str,
+        title: Optional[str] = None,
         category: Optional[str] = None,
-    ) -> "Prompt":
-        """Create a new prompt."""
+        tags: Optional[str] = None,
+    ) -> "Prompt":  # noqa: PLR0913
+        """Create a new prompt.
+
+        Args:
+            db: Database session
+            content: The prompt content (required)
+            user_id: The user ID (required)
+            title: Optional title for the prompt
+            category: Optional category for the prompt
+            tags: Optional comma-separated tags
+        """
         prompt = cls(
             title=title,
             content=content,
-            category=category or "General",
+            category=category,
+            tags=tags,
             user_id=user_id,
         )
         db.add(prompt)

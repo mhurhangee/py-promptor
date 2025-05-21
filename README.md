@@ -112,8 +112,16 @@ pytest
 ## Roadmap
 
 - Prompt library
-  - Share prompt
+  - Share to Channel: Add ability to share a prompt directly to a channel without having to use it first.
   - Search prompts
+  - Sorting: Sort prompts by name, category, last used, and created.
+  - Prompt Preview: Show a truncated preview of the prompt content in the library view.
+  - Last Used Date: Display when a prompt was last used.
+  - User and team specific prompts
+  - Prompt feedback/scoring
+  - Prompt Suggestions: Analyze message content and suggest relevant prompts from the library. (message shortcut to suggest prompts from message)
+  - Prompt Templates: Add support for variable placeholders in prompts (e.g., {variable}) that users can fill in before sending.
+  
 
 - AI Tutor
   - 
