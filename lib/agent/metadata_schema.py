@@ -8,7 +8,7 @@ class MetadataSchema(BaseModel):
 
     title: str = Field(
         ...,
-        description="A concise, descriptive title for the prompt. Should be clear and under 50 characters.",
+        description="A concise, descriptive title for the prompt. Should be clear and under 25 characters.",
     )
 
     category: str = Field(
@@ -18,5 +18,5 @@ class MetadataSchema(BaseModel):
 
     tags: str = Field(
         ...,
-        description="3-5 relevant tags for the prompt, comma-separated. These should help with organization and searchability.",
+        description="2-3 relevant single-word tags for the prompt, comma-separated. These should help with organization and searchability.",
     )

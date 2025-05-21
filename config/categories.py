@@ -2,11 +2,11 @@
 
 # Default categories available in the application
 DEFAULT_CATEGORIES = [
-    {"text": "General", "value": "General"},
-    {"text": "Writing", "value": "Writing"},
-    {"text": "Coding", "value": "Coding"},
-    {"text": "Marketing", "value": "Marketing"},
-    {"text": "Other", "value": "Other"},
+    {"text": ":book: General", "value": ":book: General"},
+    {"text": ":pencil: Writing", "value": ":pencil: Writing"},
+    {"text": ":computer: Coding", "value": ":computer: Coding"},
+    {"text": ":chart_with_upwards_trend: Marketing", "value": ":chart_with_upwards_trend: Marketing"},
+    {"text": ":question: Other", "value": ":question: Other"},
 ]
 
 # Special category value for showing all categories in filters

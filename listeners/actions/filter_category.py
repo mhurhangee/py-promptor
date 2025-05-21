@@ -54,7 +54,7 @@ def filter_category_callback(body: dict, ack: Ack, client: WebClient, logger: Lo
             ).all()
 
         # Create blocks with filtered prompts
-        blocks = get_prompt_library_blocks(user_id, show_add_button=True, filtered_prompts=prompts)
+        blocks = get_prompt_library_blocks(user_id, filtered_prompts=prompts)
 
         # Update the home tab with the filtered prompts
         client.views_publish(

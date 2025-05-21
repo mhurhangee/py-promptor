@@ -50,24 +50,20 @@ def get_prompt_library_blocks(user_id: str, filtered_prompts: Optional[List[Prom
             )
         ]),
         # Add a divider before the prompts
+        divider(),
     ]
-    blocks.append({"type": "divider"})
 
     # Add prompts to the view if they exist
     if prompts:
         # Add each prompt to the blocks
         for prompt in prompts:
-            # Create a preview of the prompt content
-            content_preview = str(prompt.content)
-            if len(content_preview) > PREVIEW_LENGTH:
-                content_preview = content_preview[:PREVIEW_LENGTH] + "..."
-
             # Add the favorite star if applicable
-            title_prefix = "★ " if bool(prompt.is_favorite) else ""
-            # Add the prompt block with View button
+            title_prefix = "⭐ " if bool(prompt.is_favorite) else ""
+
+            # Add the prompt block with View button - just show the title, no content
             blocks.append(
                 section(
-                    f"*{title_prefix}{prompt.title}*\n{content_preview}",
+                    f"*{title_prefix}{prompt.title}*",
                     accessory=button(
                         text="View",
                         action_id=f"view_prompt_details:{prompt.id}"
@@ -78,8 +74,8 @@ def get_prompt_library_blocks(user_id: str, filtered_prompts: Optional[List[Prom
             blocks.append(
                 _create_prompt_context_block(prompt)
             )
-            # Add a divider between prompts
             blocks.append(divider())
+
     else:
         # If there are no prompts, show a message
         blocks.append(
@@ -92,9 +88,10 @@ def _create_category_filter_dropdown() -> Dict:
     """Create a dropdown for filtering prompts by category."""
     # Start with special options
     options = [
-        select_option("All Prompts", ALL_CATEGORIES_VALUE),
-        select_option("★ Favorites Only", "favorites"),
+        select_option("🦕 All prompts", ALL_CATEGORIES_VALUE),
+        select_option("⭐ Favorites only", "favorites"),
     ]
+
     # Add category options from the centralized config
     for category in DEFAULT_CATEGORIES:
         options.append(select_option(category["text"], category["value"]))
@@ -105,8 +102,33 @@ def _create_category_filter_dropdown() -> Dict:
     )
 
 
+def create_prompt_metadata_text(prompt: Prompt) -> str:
+    """Create a formatted metadata string for a prompt.
+
+    This is a utility function that can be used across different UI components.
+
+    Args:
+        prompt: The prompt object containing metadata
+
+    Returns:
+        A formatted string with category, tags, and creation date
+    """
+    # Format the category
+    category_text = f"*{prompt.category or 'None'}*"
+
+    # Format the tags if they exist
+    tags_text = ""
+    if hasattr(prompt, "tags"):
+        tags = getattr(prompt, "tags", "")
+        if tags and str(tags).strip():
+            tags_text = f" | 🏷️ *{tags}*"
+
+    # Format the creation date
+    date_text = f" | 📅 {prompt.created_at.strftime('%Y-%m-%d')}"
+
+    return f"{category_text}{tags_text}{date_text}"
+
+
 def _create_prompt_context_block(prompt: Prompt) -> Dict:
     """Create a context block with prompt metadata."""
-    return context_text(
-        f"Category: *{prompt.category}* | Created: {prompt.created_at.strftime('%Y-%m-%d')}"
-    )
+    return context_text(create_prompt_metadata_text(prompt))
